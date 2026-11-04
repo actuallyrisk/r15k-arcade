@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- R15K Arcade – the only DOM: a full-viewport stage with the pixel canvas, the invisible accessibility
+     mirror root, four safe-area probes and the fatal-error box. No inline scripts or styles (the CSP is
+     default-src 'self'). -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <title>R15K Arcade</title>
+  </head>
+  <body>
+    <div id="stage" class="stage">
+      <canvas id="screen" class="screen" aria-hidden="true"></canvas>
+    </div>
+    <div id="a11y-root" class="a11y-root"></div>
+    <div class="safe-probes" aria-hidden="true">
+      <div id="safe-top" class="safe-probe safe-probe-top"></div>
+      <div id="safe-right" class="safe-probe safe-probe-right"></div>
+      <div id="safe-bottom" class="safe-probe safe-probe-bottom"></div>
+      <div id="safe-left" class="safe-probe safe-probe-left"></div>
+    </div>
+    <div id="fatal" class="fatal" role="alert" hidden></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

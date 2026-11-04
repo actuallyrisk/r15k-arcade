@@ -1,0 +1,17 @@
+# R15K Arcade – files Prettier never formats: generated output, verbatim copies, tool-written files and
+# the JSON files release-please rewrites
+pnpm-lock.yaml
+CHANGELOG.md
+.release-please-manifest.json
+**/package.json
+apps/arcade/src-tauri/tauri.conf.json
+**/dist
+**/coverage
+.tmp
+apps/arcade/public/audio
+apps/arcade/src-tauri/gen
+apps/arcade/src-tauri/target
+apps/arcade/src-tauri/icons
+assets/songs
+games/*/replays
+tools/src/platform-patch/fixtures

@@ -1,0 +1,6 @@
+// R15K Arcade – E2E tests: the Node settings of ../tsconfig.node.json, as a tsconfig.json of its own so
+// the ESLint project service finds the E2E files.
+{
+  "extends": "../tsconfig.node.json",
+  "include": ["**/*.ts"]
+}

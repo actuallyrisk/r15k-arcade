@@ -1,0 +1,38 @@
+{
+  "name": "@r15k/arcade",
+  "version": "0.1.0",
+  "description": "R15K Arcade app – hub, intro, settings, top-10 and boot scenes; Vite entry of the Tauri shell.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": [
+    "./src/main.ts",
+    "./src/styles.css"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:e2e": "vite build --mode e2e",
+    "preview": "vite preview --port 4173 --strictPort",
+    "test:e2e": "playwright test",
+    "tauri": "tauri",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@r15k/bug-hunt": "workspace:*",
+    "@r15k/engine": "workspace:*",
+    "@r15k/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@tauri-apps/cli": "catalog:",
+    "@types/node": "catalog:",
+    "happy-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

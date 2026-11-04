@@ -1,0 +1,114 @@
+/* R15K Arcade – the only stylesheet: full-viewport stage, pixelated canvas, invisible accessibility
+   mirror, safe-area probes and the boot-failure box. Runtime styling happens only through CSSOM, which
+   the CSP does not restrict; the body background follows the palette's paper colour. */
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--r15k-paper, #ffffff);
+  overscroll-behavior: none;
+}
+
+/* No white flash before the palette is applied. */
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    background: var(--r15k-paper, #12140f);
+  }
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.screen {
+  position: absolute;
+  image-rendering: pixelated;
+}
+
+/* Mirror elements stay in the accessibility tree; hit-testing stays with the canvas. */
+.a11y-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.a11y-root * {
+  position: absolute;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+}
+
+.a11y-root .a11y-live,
+.a11y-root .a11y-alert {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* One probe per inset: the only way to read env(safe-area-inset-*) from JavaScript. */
+.safe-probe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.safe-probe-top {
+  height: env(safe-area-inset-top, 0px);
+}
+
+.safe-probe-right {
+  width: env(safe-area-inset-right, 0px);
+}
+
+.safe-probe-bottom {
+  height: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-probe-left {
+  width: env(safe-area-inset-left, 0px);
+}
+
+/* Boot failures only (the canvas cannot draw its own failure); outside the mirror root, so visible. */
+.fatal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  margin: 0;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 16px
+    max(16px, env(safe-area-inset-left, 0px));
+  font:
+    16px/1.4 system-ui,
+    sans-serif;
+  color: #0c0f0a;
+  background: #ffffff;
+  border-bottom: 3px solid #5865f2;
+}
+
+.fatal[hidden] {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fatal {
+    color: #f2f3ee;
+    background: #12140f;
+  }
+}

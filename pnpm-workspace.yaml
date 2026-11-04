@@ -1,0 +1,45 @@
+# R15K Arcade – pnpm workspace: packages, exact version catalog and supply-chain settings.
+# pnpm 12: dependency build scripts are disabled; strictDepBuilds fails the install for any package with
+# a build script that allowBuilds does not list. Each listed package is reviewed and set to false (its
+# prebuilt optional binaries need no script); a `true` entry needs an ADR.
+packages:
+  - apps/*
+  - packages/*
+  - games/*
+  - tools
+
+catalog:
+  '@commitlint/cli': 21.2.4
+  '@commitlint/config-conventional': 21.2.4
+  '@eslint/js': 10.0.1
+  '@playwright/test': 1.64.1
+  '@tauri-apps/api': 2.12.4
+  '@tauri-apps/cli': 2.12.4
+  '@tauri-apps/plugin-opener': 2.7.2
+  '@tauri-apps/plugin-os': 2.4.0
+  '@tauri-apps/plugin-store': 2.5.0
+  '@types/node': 24.19.2
+  '@vitest/coverage-v8': 5.1.0
+  eslint: 10.14.0
+  eslint-config-prettier: 10.1.8
+  eslint-import-resolver-typescript: 4.4.5
+  eslint-plugin-import-x: 4.17.1
+  eslint-plugin-jsdoc: 65.4.2
+  globals: 17.14.0
+  happy-dom: 21.0.4
+  prettier: 3.9.10
+  release-please: 17.11.2
+  typescript: 6.0.3
+  typescript-eslint: 8.72.1
+  vite: 8.3.5
+  vitest: 5.1.0
+  wasm-media-encoders: 0.7.0
+
+catalogMode: strict
+saveExact: true
+minimumReleaseAge: 1440
+strictDepBuilds: true
+allowBuilds:
+  unrs-resolver: false
+disallowWorkspaceCycles: true
+engineStrict: true

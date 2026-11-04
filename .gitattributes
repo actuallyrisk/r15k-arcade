@@ -1,0 +1,10 @@
+# R15K Arcade – LF everywhere (PowerShell 7 reads LF scripts); binary assets are never diffed or converted
+* text=auto eol=lf
+*.png binary
+*.wav binary
+*.mp3 binary
+*.ico binary
+*.icns binary
+*.jar binary
+*.keystore binary
+*.jks binary

@@ -1,0 +1,10 @@
+// R15K Arcade – Bug Hunt package: sources and tests. Vite client types only for import.meta.glob in the
+// replay test; modules reachable from the barrel never use import.meta.env or import.meta.glob.
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.ts"]
+}

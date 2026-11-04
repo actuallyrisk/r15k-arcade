@@ -1,0 +1,23 @@
+{
+  "name": "@r15k/ui",
+  "version": "0.1.0",
+  "description": "R15K Arcade pixel UI – palettes, design tokens, bitmap fonts, drawing helpers, widgets and menu navigation.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@r15k/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

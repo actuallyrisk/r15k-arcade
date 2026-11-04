@@ -1,0 +1,23 @@
+# R15K Arcade – own Tauri mobile plugin "device": registers the Kotlin and Swift implementations of
+# immersive mode, keep-awake and move-to-background; no third-party crates.
+[package]
+name = "tauri-plugin-device"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "MIT"
+publish = false
+links = "tauri-plugin-device"
+workspace = "../../apps/arcade/src-tauri"
+
+[dependencies]
+tauri = "=2.12.5"
+
+[build-dependencies]
+tauri-plugin = { version = "=2.7.2", features = ["build"] }
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "deny"

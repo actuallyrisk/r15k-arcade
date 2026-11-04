@@ -1,0 +1,16 @@
+# R15K Arcade – pnpm project of the pinned Renovate CLI (run by .github/workflows/renovate.yml). It is its
+# own workspace root (no packages) with its own lockfile, so the app workspace stays small. Dependency build
+# scripts are disabled; strictDepBuilds fails the install for any package with a build script that
+# allowBuilds does not list. Each listed package is reviewed and set to false; a `true` entry needs an ADR.
+#   re2: optional native regular expressions; Renovate falls back to JavaScript regular expressions.
+#   core-js-pure: postinstall only prints a funding message.
+#   dtrace-provider: optional DTrace native addon; its own install script tolerates a failed build.
+#   protobufjs: postinstall only checks the version scheme of dependents and prints a notice.
+saveExact: true
+minimumReleaseAge: 1440
+strictDepBuilds: true
+allowBuilds:
+  re2: false
+  core-js-pure: false
+  dtrace-provider: false
+  protobufjs: false

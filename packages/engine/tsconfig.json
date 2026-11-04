@@ -1,0 +1,10 @@
+// R15K Arcade – engine package: sources and tests. DOM types because the engine runs in the WebView; no
+// Node or Vite types, so nothing reachable from the barrel depends on a bundler or on Node.
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,5 +1,3 @@
-import { notImplemented } from './assert.ts';
-
 /** Successful result of an operation that can fail. */
 export interface Ok<T> {
   readonly ok: true;
@@ -16,11 +14,11 @@ export interface Err<E> {
 export type Result<T, E> = Ok<T> | Err<E>;
 
 /** Wraps a value in a successful result. */
-export function ok<T>(_value: T): Ok<T> {
-  return notImplemented('engine.ok');
+export function ok<T>(value: T): Ok<T> {
+  return { ok: true, value };
 }
 
 /** Wraps an error in a failed result. */
-export function err<E>(_error: E): Err<E> {
-  return notImplemented('engine.err');
+export function err<E>(error: E): Err<E> {
+  return { ok: false, error };
 }

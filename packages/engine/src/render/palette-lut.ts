@@ -1,12 +1,11 @@
-import { notImplemented } from '../util/assert.ts';
-import { ROLE_SLOT_NAMES, SLOT_NAMES } from './slots.ts';
+import { COLOR_NAMES, colorSlot } from './color-slots.ts';
 import type { ColorName } from './slots.ts';
 
 /** 0xRRGGBB per token and role slot. */
 export type PaletteColors = Readonly<Record<ColorName, number>>;
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
-const COLOR_NAMES: readonly ColorName[] = [...SLOT_NAMES, ...ROLE_SLOT_NAMES];
+const LUT_SIZE = 256;
 
 /** Parses a `#rrggbb` colour into 0xRRGGBB; any other form throws. */
 export function parseHexColor(hex: string): number {
@@ -23,15 +22,27 @@ export function paletteFromHex(hex: Readonly<Record<ColorName, string>>): Palett
   ) as PaletteColors;
 }
 
+/** 0xRRGGBB → opaque 0xAABBGGRR, which a little-endian Uint32Array view stores as R, G, B, A bytes. */
+function toRgbaWord(color: number): number {
+  const red = (color >>> 16) & 0xff;
+  const green = (color >>> 8) & 0xff;
+  const blue = color & 0xff;
+  return (0xff000000 | (blue << 16) | (green << 8) | red) >>> 0;
+}
+
 /**
  * Builds the 256-entry lookup table: entry = 0xFF000000 | b << 16 | g << 8 | r (RGBA byte order on
  * little-endian); slot 0 and unused entries hold the paper colour.
  */
-export function buildPaletteLut(_colors: PaletteColors): Uint32Array {
-  return notImplemented('engine.buildPaletteLut');
+export function buildPaletteLut(colors: PaletteColors): Uint32Array {
+  const lut = new Uint32Array(LUT_SIZE).fill(toRgbaWord(colors.paper));
+  for (const name of COLOR_NAMES) {
+    lut[colorSlot(name)] = toRgbaWord(colors[name]);
+  }
+  return lut;
 }
 
 /** Whether the platform stores multi-byte integers little-endian (the presenter requires it). */
 export function isLittleEndian(): boolean {
-  return notImplemented('engine.isLittleEndian');
+  return new Uint8Array(new Uint32Array([0x01020304]).buffer)[0] === 0x04;
 }

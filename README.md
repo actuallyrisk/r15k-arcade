@@ -31,31 +31,31 @@ pnpm dev
 
 ## Commands
 
-| Command                        | What it does                                                           |
-| ------------------------------ | ---------------------------------------------------------------------- |
-| `pnpm dev`                     | Renders audio if needed, serves the app at `http://localhost:5173`     |
-| `pnpm build`                   | Renders audio if needed, production web build (`apps/arcade/dist`)     |
-| `pnpm build:e2e`               | Web build in mode `e2e` (adds the CSP meta tag)                        |
-| `pnpm preview`                 | Serves the last build at `http://localhost:4173`                       |
-| `pnpm verify`                  | Every check of the CI `checks` job, step by step; `--step <id>` one    |
-| `pnpm typecheck`               | TypeScript for every package                                           |
-| `pnpm lint` / `pnpm lint:fix`  | ESLint with `--max-warnings 0` / with fixes                            |
-| `pnpm format` / `format:check` | Prettier over the files git would commit (optionally limited to paths) |
-| `pnpm test`                    | Unit tests, replays and pixel snapshots (Vitest)                       |
-| `pnpm test:watch`              | Vitest in watch mode                                                   |
-| `pnpm test:coverage`           | Tests with the coverage gates                                          |
-| `pnpm test:e2e`                | E2E build plus Playwright in Chromium and WebKit                       |
-| `pnpm todo-check`              | To-do markers must carry an issue number                               |
-| `pnpm snapshots:update`        | Re-renders pixel goldens (`--only <prefix>`), for intended changes     |
-| `pnpm replays:update`          | Re-records replays after simulation changes                            |
-| `pnpm assets`                  | Renders songs and sound effects (`--force`, `--check`)                 |
-| `pnpm icons`                   | Renders the app icons from the icon sprite                             |
-| `pnpm sprite-check`            | Validates sprites and fonts (`--only <ids>`)                           |
-| `pnpm i18n-check`              | Checks catalog parity, placeholders, glyphs and text fit               |
-| `pnpm licences`                | Licence report and dependency policy                                   |
-| `pnpm size-budget`             | Size budgets of the web build or a native package                      |
-| `pnpm native:prepare`          | Generates and patches a native project (`--platform android\|ios`)     |
-| `pnpm tauri …`                 | The Tauri CLI of the app                                               |
+| Command                        | What it does                                                                             |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `pnpm dev`                     | Renders audio if needed, serves the app at `http://localhost:5173`                       |
+| `pnpm build`                   | Renders audio if needed, production web build (`apps/arcade/dist`)                       |
+| `pnpm build:e2e`               | Web build in mode `e2e` (adds the CSP meta tag)                                          |
+| `pnpm preview`                 | Serves the last build at `http://localhost:4173`                                         |
+| `pnpm verify`                  | Every check of the CI `checks` job, step by step; `--step <id>` one                      |
+| `pnpm typecheck`               | TypeScript for every package                                                             |
+| `pnpm lint` / `pnpm lint:fix`  | ESLint with `--max-warnings 0` / with fixes                                              |
+| `pnpm format` / `format:check` | Prettier over the files git would commit (optionally limited to paths)                   |
+| `pnpm test`                    | Unit tests, replays and pixel snapshots (Vitest)                                         |
+| `pnpm test:watch`              | Vitest in watch mode                                                                     |
+| `pnpm test:coverage`           | Tests with the coverage gates                                                            |
+| `pnpm test:e2e`                | E2E build plus Playwright in Chromium and WebKit                                         |
+| `pnpm todo-check`              | To-do markers must carry an issue number                                                 |
+| `pnpm snapshots:update`        | Re-renders pixel goldens (`--only <prefix>`), for intended changes                       |
+| `pnpm replays:update`          | Re-records replays after simulation changes                                              |
+| `pnpm assets`                  | Renders songs and sound effects (`--force`, `--check`)                                   |
+| `pnpm icons`                   | Renders the app icons from the icon sprite                                               |
+| `pnpm sprite-check`            | Validates sprites and fonts (`--only <ids>`)                                             |
+| `pnpm i18n-check`              | Checks catalog parity, placeholders, glyphs and text fit                                 |
+| `pnpm run licences`            | Licence report and dependency policy (`run`: bare `pnpm licences` is pnpm's own command) |
+| `pnpm size-budget`             | Size budgets of the web build or a native package                                        |
+| `pnpm native:prepare`          | Generates and patches a native project (`--platform android\|ios`)                       |
+| `pnpm tauri …`                 | The Tauri CLI of the app                                                                 |
 
 ## Local and CI-only tooling
 

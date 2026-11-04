@@ -1,0 +1,87 @@
+# R15K Arcade – dependency updates with the pinned Renovate CLI (its own pnpm project in .github/renovate
+# with its own lockfile; no third-party action, no GitHub App). It runs with the owner's fine-grained
+# token AUTOMATION_TOKEN (environment automation), so its branches, commits and PRs are the owner's and
+# trigger CI; without the token the job ends with a ::notice::. Daily, so Dependency Dashboard requests
+# and vulnerability fixes are handled; new update PRs follow the schedule in renovate.json. The repository
+# configuration is renovate.json (validated first); the global options below are environment variables.
+# Lockfile updates use the Corepack pnpm of packageManager and the pinned Rust toolchain on the runner.
+# Manual runs can be dry runs: dry-run '' (real run), 'lookup' or 'full'.
+name: Renovate
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+      timezone: 'Europe/Berlin'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run: empty for a real run, 'lookup' or 'full'"
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+# one run at a time, never cancelled (a cancelled run can leave a half-pushed branch)
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    name: renovate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: automation
+    env:
+      HAS_TOKEN: ${{ secrets.AUTOMATION_TOKEN != '' }}
+    steps:
+      - name: Token gate
+        if: env.HAS_TOKEN != 'true'
+        run: echo "::notice::renovate skipped (AUTOMATION_TOKEN missing)"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.HAS_TOKEN == 'true'
+        with:
+          persist-credentials: false
+
+      - name: Node, pnpm (Corepack), the pinned Renovate CLI
+        if: env.HAS_TOKEN == 'true'
+        uses: ./.github/actions/setup-workspace
+        with:
+          directory: .github/renovate
+
+      - name: Rust toolchain from rust-toolchain.toml (Cargo.lock updates)
+        if: env.HAS_TOKEN == 'true'
+        run: |
+          rustup toolchain install
+          cargo --version
+
+      - name: Validate renovate.json (repository configuration)
+        if: env.HAS_TOKEN == 'true'
+        run: >-
+          pnpm --dir .github/renovate exec renovate-config-validator --strict --no-global
+          "$GITHUB_WORKSPACE/renovate.json"
+
+      - name: Renovate
+        if: env.HAS_TOKEN == 'true'
+        env:
+          RENOVATE_TOKEN: ${{ secrets.AUTOMATION_TOKEN }}
+          RENOVATE_PLATFORM: github
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_GIT_AUTHOR: 'tomislav <tomislav@r15k.dev>'
+          RENOVATE_ONBOARDING: 'false'
+          RENOVATE_REQUIRE_CONFIG: 'required'
+          RENOVATE_BINARY_SOURCE: global
+          LOG_LEVEL: info
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          case "$DRY_RUN" in
+            '') ;;
+            lookup | full) export RENOVATE_DRY_RUN="$DRY_RUN" ;;
+            *)
+              echo "::error::dry-run must be empty, lookup or full (got '$DRY_RUN')"
+              exit 1 ;;
+          esac
+          pnpm --dir .github/renovate exec renovate

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "R15K Arcade – dependency updates (run by .github/workflows/renovate.yml with the owner's token, never automerged, no commit statuses because the token has no status permission, neutral PR and dashboard texts, branches under chore/deps-): pnpm catalog, Renovate CLI, Cargo, action SHAs, workflow tools; TypeScript stays <6.1 until typescript-eslint supports 7 (ADR 0001).",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":semanticCommitScope(deps)",
+    "helpers:pinGitHubActionDigests",
+    ":timezone(Europe/Berlin)"
+  ],
+  "branchPrefix": "chore/deps-",
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{configDescription}}}{{{controls}}}",
+  "dependencyDashboardHeader": "Pending dependency updates and detected dependencies of this repository.",
+  "schedule": ["before 6am on monday"],
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "statusCheckNames": {
+    "minimumReleaseAge": null,
+    "artifactError": null,
+    "configValidation": null
+  },
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 4,
+  "labels": ["deps"],
+  "rangeStrategy": "pin",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "apps/arcade/src-tauri/gen/**",
+    "tools/src/platform-patch/fixtures/**"
+  ],
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on monday"] },
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "minimumReleaseAge": null,
+    "schedule": ["at any time"]
+  },
+  "osvVulnerabilityAlerts": true,
+  "packageRules": [
+    { "matchPackageNames": ["typescript"], "allowedVersions": "<6.1.0", "description": "ADR 0001" },
+    { "matchManagers": ["github-actions"], "groupName": "GitHub Actions", "pinDigests": true },
+    {
+      "matchPackageNames": [
+        "@tauri-apps/**",
+        "tauri",
+        "tauri-build",
+        "tauri-plugin",
+        "tauri-plugin-**"
+      ],
+      "groupName": "Tauri",
+      "description": "npm and crate versions must share major.minor"
+    },
+    { "matchFileNames": [".github/renovate/**"], "groupName": "Renovate CLI" },
+    { "matchPackageNames": ["vite", "vitest", "@vitest/**"], "groupName": "Vite and Vitest" },
+    {
+      "matchPackageNames": ["eslint", "@eslint/**", "typescript-eslint", "eslint-**"],
+      "groupName": "ESLint"
+    },
+    { "matchPackageNames": ["node"], "matchUpdateTypes": ["major"], "enabled": false },
+    {
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<25",
+      "description": "Node stays on 24 LTS"
+    },
+    {
+      "matchPackageNames": ["rhysd/actionlint", "gitleaks/gitleaks", "google/osv-scanner"],
+      "extractVersion": "^v(?<version>.+)$",
+      "description": "tags carry a v, the workflow values do not"
+    },
+    { "matchPackageNames": ["rustsec/rustsec"], "extractVersion": "^cargo-audit/v(?<version>.+)$" }
+  ],
+  "customManagers": [
+    {
+      "description": "Workflow tool versions; the matching *_SHA256 must be updated in the same PR (CI fails otherwise)",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/(workflows|actions)/.+\\.ya?ml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s+\\w+_VERSION: ['\"]?(?<currentValue>[^'\"\\s]+)['\"]?"
+      ]
+    },
+    {
+      "description": "Rust toolchain",
+      "customType": "regex",
+      "managerFilePatterns": ["/^rust-toolchain\\.toml$/"],
+      "matchStrings": ["channel = \"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "rust-lang/rust"
+    }
+  ]
+}

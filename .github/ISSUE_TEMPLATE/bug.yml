@@ -1,0 +1,65 @@
+# R15K Arcade – issue form for bugs. The app collects no data, so everything needed to reproduce a bug
+# comes from this form: platform, device, version and the steps.
+name: Bug
+description: Something in the app or a game does not work as expected.
+title: 'fix: '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe one problem per issue. Screenshots or a short screen recording help a lot.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android
+        - iOS / iPadOS
+        - macOS
+        - Windows
+        - Browser (development build)
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and system version
+      placeholder: e.g. Pixel 8, Android 15 · iPad Air, iPadOS 18 · Windows 11 24H2
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Release tag or version number of the build you used.
+      placeholder: e.g. v0.1.0
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. …
+        2. …
+  - type: dropdown
+    id: input
+    attributes:
+      label: Input device
+      multiple: true
+      options:
+        - Touch
+        - Keyboard
+        - Mouse
+        - Gamepad

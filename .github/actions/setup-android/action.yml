@@ -1,0 +1,35 @@
+# R15K Arcade – Android toolchain on the Ubuntu runner without third-party actions: the runner's JDK 17
+# (JAVA_HOME_17_X64), the NDK of NDK_VERSION and build-tools of BUILD_TOOLS_VERSION through sdkmanager
+# (both env values are set by the calling workflow), and the Gradle caches. Exports JAVA_HOME and NDK_HOME
+# for the Tauri CLI.
+name: R15K Arcade Android
+description: JDK 17, Android NDK and build-tools (sdkmanager), Gradle cache
+runs:
+  using: composite
+  steps:
+    - name: JDK 17, NDK, build-tools and platform-tools
+      shell: bash
+      run: |
+        : "${NDK_VERSION:?NDK_VERSION must be set by the workflow}"
+        : "${BUILD_TOOLS_VERSION:?BUILD_TOOLS_VERSION must be set by the workflow}"
+        echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+        echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+        export JAVA_HOME="$JAVA_HOME_17_X64"
+        sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+        packages=("build-tools;$BUILD_TOOLS_VERSION" "platform-tools")
+        if [ ! -d "$ANDROID_HOME/ndk/$NDK_VERSION" ]; then
+          packages+=("ndk;$NDK_VERSION")
+        fi
+        "$sdkmanager" --install "${packages[@]}" > /dev/null
+        echo "NDK_HOME=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+        "$JAVA_HOME/bin/java" -version
+
+    - name: Gradle caches
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: gradle-v1-${{ hashFiles('pnpm-lock.yaml', 'apps/arcade/src-tauri/Cargo.lock') }}
+        restore-keys: |
+          gradle-v1-

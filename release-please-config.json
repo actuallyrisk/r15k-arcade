@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "bump-minor-pre-major": true,
+  "pull-request-title-pattern": "chore: release ${version}",
+  "pull-request-header": "Release prepared from the Conventional Commits merged since the last release.",
+  "pull-request-footer": "Merging this pull request tags the release and builds the packages.",
+  "changelog-sections": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug fixes" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "revert", "section": "Reverts" },
+    { "type": "docs", "section": "Documentation", "hidden": true },
+    { "type": "refactor", "section": "Refactoring", "hidden": true },
+    { "type": "ci", "section": "CI", "hidden": true },
+    { "type": "chore", "section": "Chores", "hidden": true }
+  ],
+  "packages": {
+    ".": {
+      "package-name": "r15k-arcade",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        { "type": "json", "path": "packages/engine/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/ui/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "games/bug-hunt/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "apps/arcade/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "tools/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "apps/arcade/src-tauri/tauri.conf.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "toml",
+          "path": "apps/arcade/src-tauri/Cargo.toml",
+          "jsonpath": "$.package.version"
+        },
+        { "type": "toml", "path": "plugins/device/Cargo.toml", "jsonpath": "$.package.version" },
+        {
+          "type": "toml",
+          "path": "apps/arcade/src-tauri/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value=='r15k-arcade')].version"
+        },
+        {
+          "type": "toml",
+          "path": "apps/arcade/src-tauri/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value=='tauri-plugin-device')].version"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,66 @@
+# R15K Arcade – pinned Rust toolchain, extra targets, Cargo.lock bootstrap and the cargo cache.
+# The toolchain and its components come from rust-toolchain.toml through the runner's preinstalled
+# rustup (no third-party action; since rustup 1.28 only `rustup toolchain install` installs it).
+# Cargo.lock bootstrap: while apps/arcade/src-tauri/Cargo.lock is not committed yet, it is generated here
+# before anything else runs cargo (output lock-generated, a warning in the run); the checks job uploads it
+# so it can be committed, and every later cargo call uses --locked.
+# Cache (10 GB per repository): registry and git index always; the target directory only where it pays
+# off (cache-target 'true': checks for clippy, the iOS debug build). Release builds of several targets
+# would evict everything else.
+name: R15K Arcade Rust
+description: rustup toolchain from rust-toolchain.toml, targets, Cargo.lock bootstrap, cargo cache
+inputs:
+  targets:
+    description: Space-separated rustup targets to add (empty = host only)
+    required: false
+    default: ''
+  cache-key:
+    description: Cache key part of the calling job (e.g. checks, android, ios)
+    required: true
+  cache-target:
+    description: "'true' also caches apps/arcade/src-tauri/target, 'false' only registry and git index"
+    required: false
+    default: 'true'
+outputs:
+  lock-generated:
+    description: "'true' when Cargo.lock was generated because it is not committed yet"
+    value: ${{ steps.cargo-lock.outputs.generated }}
+runs:
+  using: composite
+  steps:
+    - name: Toolchain from rust-toolchain.toml
+      shell: bash
+      env:
+        TARGETS: ${{ inputs.targets }}
+      run: |
+        rustup toolchain install
+        read -r -a targets <<< "$TARGETS"
+        if [ "${#targets[@]}" -gt 0 ]; then
+          rustup target add "${targets[@]}"
+        fi
+        rustc --version
+        cargo --version
+
+    - name: Cargo.lock bootstrap (only while it is not committed)
+      id: cargo-lock
+      shell: bash
+      run: |
+        if [ -f apps/arcade/src-tauri/Cargo.lock ]; then
+          echo "generated=false" >> "$GITHUB_OUTPUT"
+        else
+          cargo generate-lockfile --manifest-path apps/arcade/src-tauri/Cargo.toml
+          echo "generated=true" >> "$GITHUB_OUTPUT"
+          echo "::warning::Cargo.lock generated – commit the cargo-lock artifact"
+        fi
+
+    - name: cargo registry, git index and target from the cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          ${{ inputs.cache-target == 'true' && 'apps/arcade/src-tauri/target' || '' }}
+        key: cargo-v1-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('rust-toolchain.toml', 'apps/arcade/src-tauri/Cargo.lock') }}
+        restore-keys: |
+          cargo-v1-${{ runner.os }}-${{ inputs.cache-key }}-

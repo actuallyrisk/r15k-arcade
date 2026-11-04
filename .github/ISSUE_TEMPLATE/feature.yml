@@ -1,0 +1,42 @@
+# R15K Arcade – issue form for new features and changes (games, app, tooling).
+name: Feature or change
+description: A new feature, a change to a game or the app, or a technical task.
+title: 'feat: '
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Bug Hunt
+        - Arcade app (hub, intro, settings)
+        - Engine or UI
+        - Platforms (Android, iOS, macOS, Windows)
+        - Tooling or CI
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should change, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ] …
+    validations:
+      required: true
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Affects
+      options:
+        - label: Game feel or difficulty (tuning values, replays)
+        - label: Visual design (pixel goldens, screenshots at every reference viewport)
+        - label: Platform behaviour or native projects
+        - label: Dependencies or CI

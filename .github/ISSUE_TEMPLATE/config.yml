@@ -1,0 +1,2 @@
+# R15K Arcade – issue chooser: only the bug and feature forms, no blank issues.
+blank_issues_enabled: false

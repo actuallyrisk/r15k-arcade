@@ -1,0 +1,5 @@
+# R15K Arcade – pinned Rust toolchain for the Tauri shell and its plugins (CI only; targets are added per job)
+[toolchain]
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

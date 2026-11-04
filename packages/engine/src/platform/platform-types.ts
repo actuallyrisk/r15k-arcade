@@ -1,6 +1,5 @@
 import type { PostureInfo } from '../layout/layout-types.ts';
 import type { StorageAdapter } from '../storage/storage-adapter.ts';
-import { notImplemented } from '../util/assert.ts';
 import type { Unsubscribe } from '../util/emitter.ts';
 
 /** Which implementation backs the platform. */
@@ -101,8 +100,8 @@ export interface Platform {
 /** A toggle that is not available; `set()` resolves without doing anything. */
 export const UNAVAILABLE_TOGGLE: ToggleCapability = {
   isAvailable: false,
-  set(_isOn: boolean): Promise<void> {
-    return notImplemented('engine.UNAVAILABLE_TOGGLE.set');
+  set(): Promise<void> {
+    return Promise.resolve();
   },
 };
 

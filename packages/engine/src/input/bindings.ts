@@ -1,5 +1,6 @@
-import { notImplemented } from '../util/assert.ts';
+import { err, ok } from '../util/result.ts';
 import type { Result } from '../util/result.ts';
+import { ACTIONS } from './actions.ts';
 import type { Action } from './actions.ts';
 
 /** A gamepad button of the standard mapping. */
@@ -60,9 +61,78 @@ export const DEFAULT_BINDINGS: Bindings = {
   },
 };
 
+/** A JSON object (not an array, not null). */
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isIndex(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+}
+
+function parseKeyCode(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function parseGamepadControl(value: unknown): GamepadControl | undefined {
+  if (!isRecord(value) || !isIndex(value['index'])) {
+    return undefined;
+  }
+  const index = value['index'];
+  const direction = value['direction'];
+  if (value['kind'] === 'button' && direction === undefined) {
+    return { kind: 'button', index };
+  }
+  if (value['kind'] === 'axis' && (direction === -1 || direction === 1)) {
+    return { kind: 'axis', index, direction };
+  }
+  return undefined;
+}
+
+/** Parses one section (keyboard or gamepad): a list per action, every item checked. */
+function parseSection<T>(
+  section: string,
+  value: unknown,
+  parseItem: (item: unknown) => T | undefined,
+): { readonly lists: Record<Action, readonly T[]>; readonly problems: readonly string[] } {
+  const problems: string[] = [];
+  const source = isRecord(value) ? value : {};
+  if (!isRecord(value)) {
+    problems.push(`${section}: expected an object`);
+  }
+  const unknownKeys = Object.keys(source).filter(
+    (key) => !(ACTIONS as readonly string[]).includes(key),
+  );
+  problems.push(...unknownKeys.map((key) => `${section}.${key}: unknown action`));
+  const parseList = (action: Action): readonly T[] => {
+    const list = source[action];
+    if (!Array.isArray(list)) {
+      problems.push(`${section}.${action}: expected a list`);
+      return [];
+    }
+    const items = list.map((item: unknown) => parseItem(item));
+    items.forEach((item, index) => {
+      if (item === undefined) {
+        problems.push(`${section}.${action}[${index}]: invalid entry`);
+      }
+    });
+    return items.filter((item) => item !== undefined);
+  };
+  const lists = Object.fromEntries(ACTIONS.map((action) => [action, parseList(action)]));
+  return { lists: lists as Record<Action, readonly T[]>, problems };
+}
+
 /** Validates stored bindings; the error lists every problem. */
-export function validateBindings(_value: unknown): Result<Bindings, readonly string[]> {
-  return notImplemented('engine.validateBindings');
+export function validateBindings(value: unknown): Result<Bindings, readonly string[]> {
+  if (!isRecord(value)) {
+    return err(['bindings: expected an object']);
+  }
+  const keyboard = parseSection('keyboard', value['keyboard'], parseKeyCode);
+  const gamepad = parseSection('gamepad', value['gamepad'], parseGamepadControl);
+  const problems = [...keyboard.problems, ...gamepad.problems];
+  return problems.length > 0
+    ? err(problems)
+    : ok({ keyboard: keyboard.lists, gamepad: gamepad.lists });
 }
 
 /** Auto-repeat of held navigation actions (keyboard and gamepad alike). */

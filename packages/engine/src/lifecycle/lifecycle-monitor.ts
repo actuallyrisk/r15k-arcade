@@ -1,4 +1,4 @@
-import { notImplemented } from '../util/assert.ts';
+import { createEmitter } from '../util/emitter.ts';
 import type { Unsubscribe } from '../util/emitter.ts';
 
 /** Why the app suspends (every reason auto-pauses a running round). */
@@ -25,29 +25,64 @@ export interface ResumeEvent {
 /** A lifecycle change. */
 export type LifecycleEvent = SuspendEvent | ResumeEvent;
 
-/** Turns visibility, focus and page events (and reports of other producers) into lifecycle events. */
+/**
+ * Turns visibility, focus and page events (and reports of other producers) into lifecycle events. A
+ * resume never restarts a round by itself: the round shows its pause overlay and the player resumes.
+ */
 export class LifecycleMonitor {
-  constructor(_options: { readonly window: Window; readonly document: Document }) {
-    return notImplemented('engine.LifecycleMonitor.constructor');
+  private readonly document: Document;
+  private readonly emitter = createEmitter<LifecycleEvent>();
+  private readonly cleanups: (() => void)[] = [];
+
+  constructor(options: { readonly window: Window; readonly document: Document }) {
+    const { window, document } = options;
+    this.document = document;
+    const onVisibility = (): void => {
+      this.emitter.emit(
+        this.isVisible ? { kind: 'resume' } : { kind: 'suspend', reason: 'hidden' },
+      );
+    };
+    const onBlur = (): void => {
+      this.report('blur');
+    };
+    const onFocus = (): void => {
+      this.emitter.emit({ kind: 'resume' });
+    };
+    const onPageHide = (): void => {
+      this.report('pagehide');
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('pagehide', onPageHide);
+    this.cleanups.push(() => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('pagehide', onPageHide);
+    });
   }
 
   /** Calls the listener with every lifecycle event. */
-  subscribe(_listener: (event: LifecycleEvent) => void): Unsubscribe {
-    return notImplemented('engine.LifecycleMonitor.subscribe');
+  subscribe(listener: (event: LifecycleEvent) => void): Unsubscribe {
+    return this.emitter.subscribe(listener);
   }
 
   /** For producers outside the DOM: mixer (interruption), layout (viewport/posture), input (gamepad). */
-  report(_reason: SuspendReason): void {
-    return notImplemented('engine.LifecycleMonitor.report');
+  report(reason: SuspendReason): void {
+    this.emitter.emit({ kind: 'suspend', reason });
   }
 
   /** Whether the document is visible. */
   get isVisible(): boolean {
-    return notImplemented('engine.LifecycleMonitor.isVisible');
+    return this.document.visibilityState === 'visible';
   }
 
   /** Removes every listener. */
   dispose(): void {
-    return notImplemented('engine.LifecycleMonitor.dispose');
+    for (const cleanup of this.cleanups.splice(0)) {
+      cleanup();
+    }
+    this.emitter.clear();
   }
 }

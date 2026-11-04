@@ -1,5 +1,5 @@
 import type { Point } from '../math/geometry.ts';
-import { notImplemented } from '../util/assert.ts';
+import { ACTIONS } from './actions.ts';
 import type { Action, InputDevice, PointerKind, Shortcut } from './actions.ts';
 
 /** State of one action in this frame. */
@@ -64,7 +64,31 @@ export interface InputFrame {
   readonly hadActivity: boolean;
 }
 
+/** The state of an action without any input. */
+const IDLE_ACTION: ActionState = {
+  isHeld: false,
+  wasPressed: false,
+  wasReleased: false,
+  pulses: 0,
+};
+
+/** Every action idle (shared and immutable). */
+const IDLE_ACTIONS = Object.freeze(
+  Object.fromEntries(ACTIONS.map((action) => [action, IDLE_ACTION])) as Record<Action, ActionState>,
+);
+
 /** An input frame without any input (default device 'keyboard'; tests and transitions). */
-export function createIdleInputFrame(_lastDevice?: InputDevice): InputFrame {
-  return notImplemented('engine.createIdleInputFrame');
+export function createIdleInputFrame(lastDevice: InputDevice = 'keyboard'): InputFrame {
+  return {
+    actions: IDLE_ACTIONS,
+    pointer: undefined,
+    releases: [],
+    taps: [],
+    moveTarget: undefined,
+    wheelDelta: 0,
+    typedChars: [],
+    lastDevice,
+    shortcuts: [],
+    hadActivity: false,
+  };
 }

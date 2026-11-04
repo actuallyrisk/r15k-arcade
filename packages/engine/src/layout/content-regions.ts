@@ -1,5 +1,4 @@
 import type { Rect } from '../math/geometry.ts';
-import { notImplemented } from '../util/assert.ts';
 import type { LayoutResult } from './layout-types.ts';
 
 /** Where every scene places content. */
@@ -16,6 +15,13 @@ export interface ContentRegions {
  * Flat and too-small: display = interaction = safe; tabletop: the upper and the lower segment; book:
  * the wider segment and the other one.
  */
-export function contentRegions(_layout: LayoutResult): ContentRegions {
-  return notImplemented('engine.contentRegions');
+export function contentRegions(layout: LayoutResult): ContentRegions {
+  if (
+    layout.kind === 'ok' &&
+    layout.fieldSegment !== undefined &&
+    layout.segmentPanel !== undefined
+  ) {
+    return { display: layout.fieldSegment, interaction: layout.segmentPanel, isSplit: true };
+  }
+  return { display: layout.safe, interaction: layout.safe, isSplit: false };
 }

@@ -1,6 +1,6 @@
 import type { Insets, Rect } from '../math/geometry.ts';
-import { notImplemented } from '../util/assert.ts';
 import type { ViewportSnapshot } from './layout-types.ts';
+import { postureFromSegments } from './segments.ts';
 
 /** Identifier of a reference viewport. */
 export type ReferenceViewportId =
@@ -153,6 +153,19 @@ export const REFERENCE_VIEWPORTS: readonly ReferenceViewport[] = [
 ];
 
 /** The viewport snapshot of a reference viewport (posture derived from its segments). */
-export function referenceSnapshot(_id: ReferenceViewportId): ViewportSnapshot {
-  return notImplemented('engine.referenceSnapshot');
+export function referenceSnapshot(id: ReferenceViewportId): ViewportSnapshot {
+  const viewport = REFERENCE_VIEWPORTS.find((candidate) => candidate.id === id);
+  if (viewport === undefined) {
+    throw new Error(`Unknown reference viewport: ${id}`);
+  }
+  const dpr = viewport.devicePixelRatio;
+  return {
+    cssWidth: viewport.cssWidth,
+    cssHeight: viewport.cssHeight,
+    devicePixelRatio: dpr,
+    deviceWidth: Math.round(viewport.cssWidth * dpr),
+    deviceHeight: Math.round(viewport.cssHeight * dpr),
+    safeArea: viewport.safeArea,
+    posture: postureFromSegments(viewport.segments),
+  };
 }

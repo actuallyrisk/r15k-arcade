@@ -1,9 +1,22 @@
-import { notImplemented } from '../util/assert.ts';
-import type { StorageAdapter } from './storage-adapter.ts';
+import type { StorageAdapter, StoredRead } from './storage-adapter.ts';
 
 /** In-memory storage (tests, snapshot services). */
 export function createMemoryStorageAdapter(
-  _initial?: Readonly<Record<string, string>>,
+  initial: Readonly<Record<string, string>> = {},
 ): StorageAdapter {
-  return notImplemented('engine.createMemoryStorageAdapter');
+  const entries = new Map(Object.entries(initial));
+  return {
+    kind: 'memory',
+    read(key: string): Promise<StoredRead> {
+      return Promise.resolve({ text: entries.get(key), issues: [] });
+    },
+    write(key: string, value: string): Promise<void> {
+      entries.set(key, value);
+      return Promise.resolve();
+    },
+    remove(key: string): Promise<void> {
+      entries.delete(key);
+      return Promise.resolve();
+    },
+  };
 }

@@ -188,12 +188,18 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  e2e:
-    name: e2e
+  # WebKit needs about 2 min per flow on a 2-core runner, so the 88 tests run as 4 Playwright shards in
+  # parallel; the e2e job below gathers them into the single check name the branch protection requires.
+  e2e-shard:
+    name: e2e (${{ matrix.shard }}/4)
     needs: checks
     if: ${{ !cancelled() && needs.checks.outputs.audio-ready == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -224,14 +230,16 @@ jobs:
       - name: Chromium and WebKit with their system libraries
         run: pnpm --filter @r15k/arcade exec playwright install --with-deps chromium webkit
 
-      - name: E2E (every reference viewport in Chromium and WebKit)
-        run: pnpm run test:e2e
+      - name: E2E (every reference viewport in Chromium and WebKit, one shard)
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: pnpm run test:e2e --shard="$SHARD/4"
 
       - name: Screenshots for the visual check
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: e2e-screens
+          name: e2e-screens-${{ matrix.shard }}
           path: .tmp/e2e-screens
           include-hidden-files: true
           retention-days: 14
@@ -241,13 +249,27 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: |
             .tmp/playwright-report
             .tmp/playwright-results
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: ignore
+
+  e2e:
+    name: e2e
+    needs: e2e-shard
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Every shard passed
+        env:
+          SHARDS: ${{ needs.e2e-shard.result }}
+        run: |
+          echo "e2e shards: $SHARDS"
+          [ "$SHARDS" = 'success' ]
 
   platforms:
     name: platforms

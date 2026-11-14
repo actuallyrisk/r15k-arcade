@@ -1,0 +1,39 @@
+# R15K Arcade – PR title check: the title becomes the squash commit on main, so it must be a Conventional
+# Commit with one of the repository's types and scopes (commitlint.config.mjs; CONTRIBUTING.md, "Commits
+# and pull requests"). No third-party action: commitlint is a dev dependency of the root package, and only
+# the root package is installed. The title reaches the script through an environment variable, never as
+# an expression inside the script. A workflow of its own, so editing a title does not restart CI.
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    name: pr-title
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node, pnpm (Corepack), root package only (commitlint)
+        uses: ./.github/actions/setup-workspace
+        with:
+          install: --filter r15k-arcade
+
+      - name: commitlint on the PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          printf 'PR title: %s\n' "$PR_TITLE"
+          printf '%s\n' "$PR_TITLE" | pnpm exec commitlint

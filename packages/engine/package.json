@@ -1,0 +1,26 @@
+{
+  "name": "@r15k/engine",
+  "version": "0.1.0",
+  "description": "R15K Arcade engine – loop, rng, time, framebuffer renderer, layout, input, audio, scenes, a11y mirror, i18n, storage and platform adapters.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "catalog:",
+    "@tauri-apps/plugin-opener": "catalog:",
+    "@tauri-apps/plugin-os": "catalog:",
+    "@tauri-apps/plugin-store": "catalog:"
+  },
+  "devDependencies": {
+    "happy-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

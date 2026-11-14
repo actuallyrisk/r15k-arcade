@@ -1,0 +1,14 @@
+# R15K Arcade – actionlint configuration (CI checks job, `pnpm verify --step actionlint`; actionlint runs
+# shellcheck on every bash run block). Every job runs on GitHub-hosted runners, so no self-hosted runner
+# labels exist. Listing the repository variables makes actionlint report a mistyped vars.* name.
+self-hosted-runner:
+  labels: []
+config-variables:
+  # MSIX identity once the Partner Center product exists (build-platforms.yml, msix-pack.ps1)
+  - MSIX_IDENTITY_NAME
+  - MSIX_PUBLISHER
+paths:
+  .github/workflows/**/*.{yml,yaml}:
+    ignore:
+      # single-quoted jq and node -e programs keep their $ on purpose
+      - 'SC2016:'

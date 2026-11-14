@@ -1,0 +1,10 @@
+// R15K Arcade – pixel UI package: sources and tests. DOM types for the engine sources it imports; no Node
+// or Vite types, so nothing reachable from the barrel depends on a bundler or on Node.
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["src/**/*.ts"]
+}

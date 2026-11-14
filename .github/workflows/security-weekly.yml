@@ -1,0 +1,93 @@
+# R15K Arcade – weekly security scan, Monday 06:00 Berlin time, and on demand: pnpm audit (workspace),
+# cargo-audit (Cargo.lock), OSV-Scanner over all three lockfiles (workspace, Renovate CLI, Cargo) and
+# gitleaks over the full git history. No secrets and no issue: a failed scheduled run already notifies
+# the owner by e-mail. Tools are downloaded with a pinned version and verified SHA-256.
+name: Security weekly
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+      timezone: 'Europe/Berlin'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-weekly
+  cancel-in-progress: false
+
+env:
+  # renovate: datasource=github-releases depName=rustsec/rustsec
+  CARGO_AUDIT_VERSION: '0.22.2'
+  CARGO_AUDIT_SHA256: 'ab28a1bdb54db4d5d8ad5981cf1f959410370b3d28250dbd35f6a44248620e39'
+  # renovate: datasource=github-releases depName=google/osv-scanner
+  OSV_SCANNER_VERSION: '2.7.0'
+  OSV_SCANNER_SHA256: '160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b'
+  # renovate: datasource=github-releases depName=gitleaks/gitleaks
+  GITLEAKS_VERSION: '8.30.1'
+  GITLEAKS_SHA256: '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb'
+
+jobs:
+  pnpm-audit:
+    name: pnpm-audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node, pnpm (Corepack), dependencies
+        uses: ./.github/actions/setup-workspace
+
+      - name: pnpm audit (high and critical)
+        run: pnpm audit --audit-level high
+
+  cargo-audit:
+    name: cargo-audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: cargo-audit (pinned, SHA-256 verified)
+        run: bash .github/scripts/download-tool.sh cargo-audit "$CARGO_AUDIT_VERSION" "$CARGO_AUDIT_SHA256"
+
+      - name: RustSec advisories for Cargo.lock
+        run: cargo-audit audit --file apps/arcade/src-tauri/Cargo.lock
+
+  osv:
+    name: osv
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: OSV-Scanner (pinned, SHA-256 verified)
+        run: bash .github/scripts/download-tool.sh osv-scanner "$OSV_SCANNER_VERSION" "$OSV_SCANNER_SHA256"
+
+      - name: OSV advisories for every lockfile
+        run: >-
+          osv-scanner scan source --lockfile pnpm-lock.yaml --lockfile .github/renovate/pnpm-lock.yaml
+          --lockfile apps/arcade/src-tauri/Cargo.lock
+
+  gitleaks-history:
+    name: gitleaks-history
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: gitleaks (pinned, SHA-256 verified)
+        run: bash .github/scripts/download-tool.sh gitleaks "$GITLEAKS_VERSION" "$GITLEAKS_SHA256"
+
+      - name: Secrets in the full history
+        run: gitleaks git . --config .gitleaks.toml --redact --no-banner --exit-code 1

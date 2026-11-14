@@ -1,0 +1,69 @@
+# R15K Arcade – Node, pnpm and dependencies for every job (Linux, macOS and Windows runners).
+# Only GitHub's own actions: Node from .node-version (actions/setup-node), pnpm through Corepack in the
+# version of packageManager (no pnpm action). The pnpm store is cached per OS and architecture, keyed by
+# the project's lockfile and pnpm-workspace.yaml (overrides, build allow-list). Only a full install with
+# cache: save stores a new cache entry, pruned first so the store does not grow with old packages; the
+# first job per OS saves (checks, build-macos, build-windows), every other job only restores.
+#   directory  the pnpm project to install: the workspace (.) or the Renovate CLI (.github/renovate)
+#   install    extra arguments, e.g. "--filter r15k-arcade" for the root package only
+name: R15K Arcade workspace
+description: Node from .node-version, pnpm through Corepack, cached pnpm store, pnpm install --frozen-lockfile
+inputs:
+  install:
+    description: Extra arguments for pnpm install --frozen-lockfile; empty installs the whole project
+    required: false
+    default: ''
+  cache:
+    description: save (restore, and store a new entry after a full install), restore or none
+    required: false
+    default: restore
+  directory:
+    description: Directory of the pnpm project to install (. or .github/renovate)
+    required: false
+    default: .
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .node-version
+
+    - name: pnpm through Corepack (version from packageManager)
+      shell: bash
+      env:
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      run: |
+        corepack enable
+        echo "pnpm $(pnpm --version), Node $(node --version)"
+        echo "PNPM_STORE_DIR=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+    - name: pnpm store from the cache
+      id: restore
+      if: inputs.cache != 'none'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.PNPM_STORE_DIR }}
+        key: pnpm-store-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.directory), format('{0}/pnpm-workspace.yaml', inputs.directory)) }}
+        restore-keys: |
+          pnpm-store-v1-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: pnpm install --frozen-lockfile
+      shell: bash
+      env:
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+        DIRECTORY: ${{ inputs.directory }}
+        INSTALL: ${{ inputs.install }}
+      # INSTALL is unquoted on purpose: it holds zero or more arguments
+      run: pnpm --dir "$DIRECTORY" install --frozen-lockfile ${INSTALL}
+
+    - name: Prune the pnpm store (new cache entry)
+      if: inputs.cache == 'save' && inputs.install == '' && steps.restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm store prune
+
+    - name: pnpm store into the cache
+      if: inputs.cache == 'save' && inputs.install == '' && steps.restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.PNPM_STORE_DIR }}
+        key: ${{ steps.restore.outputs.cache-primary-key }}

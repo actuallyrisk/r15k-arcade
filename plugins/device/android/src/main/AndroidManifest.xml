@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  R15K Arcade – manifest of the "device" plugin library: empty on purpose. The namespace comes from
+  build.gradle.kts, and immersive mode, keep-awake and move to background need no permission.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  R15K Arcade – iOS and iPadOS Info.plist keys that Tauri merges into the generated Xcode project:
+  arcade-games category, game controllers and Game Mode, hidden status bar, iPad multitasking and
+  the orientations (iPhone all except upside down, iPad all four). A test keeps them equal to
+  IOS_INFO_KEYS in tools/src/platform-patch/apple-keys.ts, which also patches the generated
+  project and verifies the built bundle.
+-->
+<plist version="1.0">
+<dict>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.arcade-games</string>
+  <key>GCSupportsControllerUserInteraction</key>
+  <true/>
+  <key>GCSupportedGameControllers</key>
+  <array>
+    <dict>
+      <key>ProfileName</key>
+      <string>ExtendedGamepad</string>
+    </dict>
+  </array>
+  <key>GCSupportsGameMode</key>
+  <true/>
+  <key>UIStatusBarHidden</key>
+  <true/>
+  <key>UIViewControllerBasedStatusBarAppearance</key>
+  <false/>
+  <key>UIRequiresFullScreen</key>
+  <false/>
+  <key>UIApplicationSupportsIndirectInputEvents</key>
+  <true/>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
+  <key>UISupportedInterfaceOrientations~ipad</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
+</dict>
+</plist>

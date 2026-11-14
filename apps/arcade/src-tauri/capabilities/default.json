@@ -1,0 +1,24 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Minimum permissions of the main window: save slots, r15k.dev link, platform name, fullscreen, window reveal, Android back button, and the app's own device plugin (immersive mode, keep-awake, move to background).",
+  "windows": ["main"],
+  "permissions": [
+    "store:allow-load",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "store:allow-delete",
+    "os:allow-platform",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "https://r15k.dev" }, { "url": "https://r15k.dev/*" }]
+    },
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-is-fullscreen",
+    "core:window:allow-show",
+    "core:app:allow-register-listener",
+    "core:app:allow-remove-listener",
+    "device:default"
+  ]
+}

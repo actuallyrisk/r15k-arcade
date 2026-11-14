@@ -1,0 +1,14 @@
+{
+  "format": "r15k-replay",
+  "version": 1,
+  "game": "bug-hunt",
+  "mode": "arcade",
+  "contentVersion": 1,
+  "seed": 2,
+  "stepHz": 120,
+  "steps": 7416,
+  "inputs": [],
+  "finalHash": "6b1a3fa7",
+  "finalScore": 10,
+  "note": "Arcade round of seed 2 without input: misses, dodges and catches on the idle cat."
+}

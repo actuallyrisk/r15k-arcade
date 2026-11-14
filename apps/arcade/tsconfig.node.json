@@ -1,0 +1,11 @@
+// R15K Arcade – app files that run in Node: the Vite and Playwright configs and the E2E tests. DOM types
+// because the Playwright config and E2E helpers import the engine sources. Not named tsconfig.json, so the
+// two config files are linted without type information (see eslint.config.mjs).
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "playwright.config.ts", "e2e/**/*.ts"]
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  R15K Arcade – macOS Info.plist keys that Tauri merges into the app bundle: Game Mode and game
+  controller support (the arcade-games category comes from bundle.category in tauri.conf.json).
+  A test keeps them equal to MACOS_INFO_KEYS in tools/src/platform-patch/apple-keys.ts, and the
+  platform patch verifies them in the built bundle.
+-->
+<plist version="1.0">
+<dict>
+  <key>GCSupportsGameMode</key>
+  <true/>
+  <key>GCSupportsControllerUserInteraction</key>
+  <true/>
+</dict>
+</plist>

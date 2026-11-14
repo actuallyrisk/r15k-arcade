@@ -1,0 +1,10 @@
+// R15K Arcade – app sources and unit tests (browser). Vite client types for main.ts and the app entry;
+// modules reachable from the barrel (src/index.ts) never use import.meta.env or JSON imports.
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.ts"]
+}

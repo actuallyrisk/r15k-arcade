@@ -1,0 +1,46 @@
+# R15K Arcade – Tauri shell. Rust is glue only: plugin registration and window setup; no game logic.
+# This manifest is also the Cargo workspace root for our own plugin in plugins/device, so one Cargo.lock
+# and one target directory serve both. Versions are exact; npm and crate Tauri versions share major.minor.
+[package]
+name = "r15k-arcade"
+version = "0.1.0"
+description = "R15K Arcade"
+authors = ["R15K"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.90"
+publish = false
+
+[workspace]
+members = ["../../../plugins/device"]
+resolver = "3"
+
+[lib]
+name = "r15k_arcade_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "=2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "=2.12.5", features = [] }
+tauri-plugin-store = "=2.5.0"
+tauri-plugin-opener = "=2.7.2"
+tauri-plugin-os = "=2.4.0"
+tauri-plugin-device = { path = "../../../plugins/device" }
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-window-state = "=2.5.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "deny"

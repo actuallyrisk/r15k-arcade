@@ -15,6 +15,8 @@ out_dir="${2:?usage: ios-smoke.sh <app> <outDir>}"
 mkdir -p "$out_dir"
 udid=''
 
+# Invoked by the EXIT trap below, which shellcheck does not follow.
+# shellcheck disable=SC2329
 cleanup() {
   if [ -n "$udid" ]; then
     xcrun simctl shutdown "$udid" > /dev/null 2>&1 || true

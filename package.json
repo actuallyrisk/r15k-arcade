@@ -1,6 +1,6 @@
 {
   "name": "r15k-arcade",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "R15K Arcade – small pixel games in the design of r15k.dev",

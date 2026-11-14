@@ -41,21 +41,65 @@ test('clicks on buttons and switches activate; clicks on other nodes do nothing'
   ]);
 });
 
-test('a range input reports its value, a select change its option', () => {
+/** Dispatches a bubbling, cancelable keydown and returns it. */
+function pressKey(target: Element | null, key: string): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  target?.dispatchEvent(event);
+  return event;
+}
+
+test('a range input reports its value; change and plain events on a spinbutton do not', () => {
   const { mirror, element, onEvent } = createMirrorFixture();
   mirror.sync(treeOf(ALL_KINDS));
   const music = element('music') as HTMLInputElement;
   music.value = '40';
   music.dispatchEvent(new Event('input', { bubbles: true }));
   music.dispatchEvent(new Event('change', { bubbles: true }));
-  const language = element('language') as HTMLSelectElement;
-  language.value = 'en';
-  language.dispatchEvent(new Event('change', { bubbles: true }));
-  language.dispatchEvent(new Event('input', { bubbles: true }));
-  expect(onEvent.mock.calls).toEqual([
-    [{ kind: 'value', id: 'music', value: 40 }],
-    [{ kind: 'select', id: 'language', optionId: 'en' }],
-  ]);
+  element('language')?.dispatchEvent(new Event('change', { bubbles: true }));
+  element('language')?.dispatchEvent(new Event('keydown', { bubbles: true }));
+  expect(onEvent.mock.calls).toEqual([[{ kind: 'value', id: 'music', value: 40 }]]);
+});
+
+test('synthetic adjusting keys on a spinbutton select the next, previous, first or last option', () => {
+  const { mirror, element, onEvent } = createMirrorFixture();
+  mirror.sync(treeOf(ALL_KINDS));
+  const language = element('language');
+  for (const key of ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'Home', 'End']) {
+    pressKey(language, key);
+  }
+  expect(onEvent.mock.calls.map(([event]) => event)).toEqual(
+    ['en', 'en', 'system', 'system', 'system', 'en'].map((optionId) => ({
+      kind: 'select',
+      id: 'language',
+      optionId,
+    })),
+  );
+});
+
+test('a handled key stays in the mirror; other keys and keys on other nodes pass through', () => {
+  const { mirror, element, onEvent } = createMirrorFixture();
+  mirror.sync(treeOf(ALL_KINDS));
+  const reachedWindow: string[] = [];
+  const onWindowKey = (event: KeyboardEvent): void => {
+    reachedWindow.push(event.key);
+  };
+  window.addEventListener('keydown', onWindowKey);
+  const handled = pressKey(element('language'), 'ArrowUp');
+  const ignored = pressKey(element('language'), 'Enter');
+  pressKey(element('back'), 'ArrowUp');
+  window.removeEventListener('keydown', onWindowKey);
+  expect([handled.defaultPrevented, ignored.defaultPrevented]).toEqual([true, false]);
+  expect(reachedWindow).toEqual(['Enter', 'ArrowUp']);
+  expect(onEvent).toHaveBeenCalledTimes(1);
+});
+
+test('real keystrokes on a spinbutton are left to the input manager', () => {
+  const { mirror, element, onEvent } = createMirrorFixture();
+  mirror.sync(treeOf(ALL_KINDS));
+  const event = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'isTrusted', { value: true });
+  element('language')?.dispatchEvent(event);
+  expect([event.defaultPrevented, onEvent.mock.calls.length]).toEqual([false, 0]);
 });
 
 test('events on mirror parts without a node are ignored', () => {

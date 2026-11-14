@@ -1,6 +1,7 @@
 import type { Locale } from '../i18n/catalog.ts';
 import type { Rect } from '../math/geometry.ts';
-import { createMirrorEntry, placeElement, setAttributeValue, shapeOf } from './a11y-elements.ts';
+import { setAttributeValue } from './a11y-attributes.ts';
+import { createMirrorEntry, placeElement, shapeOf } from './a11y-elements.ts';
 import type { MirrorEntry } from './a11y-elements.ts';
 import type { A11yEvent, A11yNode, A11yTree } from './a11y-types.ts';
 import { createLiveRegion } from './live-region.ts';
@@ -26,17 +27,29 @@ export const ANNOUNCE_MIN_SPACING_MS = 500;
 /** The brand name labelling the mirror's main landmark (the same in every language). */
 const LANDMARK_LABEL = 'R15K Arcade';
 
+/**
+ * A key that steps a spinbutton becomes a select event. Only untrusted keys count: assistive
+ * technology adjusts an ARIA spinbutton by dispatching synthetic arrow keys, while real keystrokes
+ * reach the input manager, which moves the pixel selector itself.
+ */
+function keyToSelect(id: string, entry: MirrorEntry, event: Event): A11yEvent | undefined {
+  if (event.isTrusted || !('key' in event) || typeof event.key !== 'string') {
+    return undefined;
+  }
+  const optionId = entry.optionForKey(event.key);
+  return optionId === undefined ? undefined : { kind: 'select', id, optionId };
+}
+
 /** DOM events the mirror turns into mirror events, by event type. */
 const EVENT_MAPPERS: Readonly<
-  Record<string, (id: string, entry: MirrorEntry) => A11yEvent | undefined>
+  Record<string, (id: string, entry: MirrorEntry, event: Event) => A11yEvent | undefined>
 > = {
   focusin: (id) => ({ kind: 'focus', id }),
   click: (id, entry) =>
     entry.kind === 'button' || entry.kind === 'switch' ? { kind: 'activate', id } : undefined,
   input: (id, entry) =>
     entry.kind === 'slider' ? { kind: 'value', id, value: Number(entry.value()) } : undefined,
-  change: (id, entry) =>
-    entry.kind === 'select' ? { kind: 'select', id, optionId: entry.value() } : undefined,
+  keydown: keyToSelect,
 };
 
 /** Creates an element with a class name. */
@@ -50,9 +63,9 @@ function createWithClass(document: Document, tag: string, className: string): HT
  * Invisible DOM layer that mirrors every pixel widget for assistive technology: one real element per
  * node, in tree order, placed exactly at `toCss(node.rect)` (degenerate sizes grow to 1 CSS px).
  * Canvas → DOM: `sync` diffs by node id and moves DOM focus when the tree's focus changed and the
- * element is not focused already. DOM → canvas: focus, clicks on buttons and switches, range input and
- * select changes become mirror events for `onEvent`; focus that the mirror moves itself is not
- * reported back. A node id that occurs twice in one tree is mirrored once (the first node).
+ * element is not focused already. DOM → canvas: focus, clicks on buttons and switches, range input
+ * changes and synthetic adjusting keys on selector spinbuttons become mirror events for `onEvent`;
+ * focus that the mirror moves itself is not reported back. A node id that occurs twice in one tree is mirrored once (the first node).
  */
 export class A11yMirror {
   private readonly document: Document;
@@ -159,10 +172,16 @@ export class A11yMirror {
     if (id === undefined || entry === undefined || (event.type === 'focusin' && this.isFocusing)) {
       return;
     }
-    const mirrorEvent = EVENT_MAPPERS[event.type]?.(id, entry);
-    if (mirrorEvent !== undefined) {
-      this.onEvent(mirrorEvent);
+    const mirrorEvent = EVENT_MAPPERS[event.type]?.(id, entry, event);
+    if (mirrorEvent === undefined) {
+      return;
     }
+    if (event.type === 'keydown') {
+      // The step is handled here; the keyboard source must not see the synthetic key as well.
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.onEvent(mirrorEvent);
   };
 
   /** Creates a live region element. */

@@ -21,6 +21,23 @@ function describeChildren(parent: Element, attributes: readonly string[]): reado
   ]);
 }
 
+/** Role, label, min, max, now, value text, tab index, option id and disabled state ('-' if unset). */
+function describeSpinbutton(element: Element | null): string {
+  return [
+    'role',
+    'aria-label',
+    'aria-valuemin',
+    'aria-valuemax',
+    'aria-valuenow',
+    'aria-valuetext',
+    'tabindex',
+    'data-option-id',
+    'aria-disabled',
+  ]
+    .map((name) => element?.getAttribute(name) ?? '-')
+    .join(' | ');
+}
+
 test('the mirror builds the landmark, the title and both live regions', () => {
   const { root } = createMirrorFixture();
   expect(describeChildren(root, ['role', 'aria-live', 'aria-atomic', 'aria-label'])).toEqual([
@@ -45,7 +62,7 @@ test('sync creates one real element per node kind, in tree order after the title
     ['BUTTON', 'back'],
     ['BUTTON', 'mute'],
     ['INPUT', 'music'],
-    ['SELECT', 'language'],
+    ['DIV', 'language'],
     ['UL', 'scores'],
   ]);
 });
@@ -76,13 +93,9 @@ test('labels, states and descriptions are written to the elements', () => {
     'Music',
     '70 %',
   ]);
-  const language = element('language') as HTMLSelectElement;
-  expect(Array.from(language.options, (option) => [option.value, option.textContent])).toEqual([
-    ['system', 'System'],
-    ['de', 'Deutsch'],
-    ['en', 'English'],
-  ]);
-  expect([language.value, language.getAttribute('aria-label')]).toEqual(['de', 'Language']);
+  expect(describeSpinbutton(element('language'))).toBe(
+    'spinbutton | Language | 0 | 2 | 1 | Deutsch | 0 | de | -',
+  );
   const scores = element('scores');
   expect(Array.from(scores?.children ?? [], (item) => item.textContent)).toEqual([
     '1. R15 120',
@@ -175,8 +188,9 @@ test('options, items and descriptions follow their changes', () => {
       { kind: 'text', id: 'hint', rect: { x: 0, y: 0, width: 9, height: 9 }, label: 'Press Enter' },
     ]),
   );
-  const language = element('language') as HTMLSelectElement;
-  expect([language.options.length, language.value]).toEqual([1, 'en']);
+  expect(describeSpinbutton(element('language'))).toBe(
+    'spinbutton | Language | 0 | 0 | 0 | English | 0 | en | -',
+  );
   expect(element('scores')?.textContent).toBe('1. R15 150');
   expect(element('hint')?.hasAttribute('aria-description')).toBe(false);
 });

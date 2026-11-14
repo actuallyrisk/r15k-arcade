@@ -1,8 +1,10 @@
 // DOM elements of the accessibility mirror: one real element per node kind (heading, paragraph,
-// button, switch, range input, select, list). Every write first compares with the DOM, so a sync that
-// changes nothing touches nothing, and assistive technology is not told about unchanged state.
+// button, switch, range input, spinbutton, list). Every write first compares with the DOM, so a sync
+// that changes nothing touches nothing, and assistive technology is not told about unchanged state.
 import type { Rect } from '../math/geometry.ts';
-import type { A11yButton, A11yNode, A11ySelect, A11ySlider, A11ySwitch } from './a11y-types.ts';
+import { setAttributeValue } from './a11y-attributes.ts';
+import { createSpinbutton } from './a11y-spinbutton.ts';
+import type { A11yButton, A11yNode, A11ySlider, A11ySwitch } from './a11y-types.ts';
 
 /** The element of one node and how to bring it up to date. */
 export interface MirrorEntry {
@@ -12,12 +14,17 @@ export interface MirrorEntry {
   readonly element: HTMLElement;
   /** Writes the kind-specific label and state of a node of the same shape. */
   readonly update: (node: A11yNode) => void;
-  /** The control's current value (range inputs and selects; '' for other kinds). */
+  /** The control's current value (range input value, spinbutton option id; '' for other kinds). */
   readonly value: () => string;
+  /** The option id an adjusting key moves a spinbutton to; undefined for every other kind. */
+  readonly optionForKey: (key: string) => string | undefined;
 }
 
-/** The value of an element that has none (only range inputs and selects have one). */
+/** The value of an element that has none (only range inputs and spinbuttons have one). */
 const noValue = (): string => '';
+
+/** Keys adjust nothing on elements other than spinbuttons. */
+const noOption = (): undefined => undefined;
 
 /** The shape of a node (headings differ by level, because the tag does). */
 export function shapeOf(node: A11yNode): string {
@@ -31,20 +38,8 @@ function setText(element: HTMLElement, text: string): void {
   }
 }
 
-/** Sets or removes an attribute unless it already has that value. */
-export function setAttributeValue(element: Element, name: string, value: string | undefined): void {
-  if (value === undefined) {
-    element.removeAttribute(name);
-  } else if (element.getAttribute(name) !== value) {
-    element.setAttribute(name, value);
-  }
-}
-
 /** Disables a control unless it already is in that state. */
-function setDisabled(
-  element: HTMLButtonElement | HTMLInputElement | HTMLSelectElement,
-  isDisabled: boolean,
-): void {
+function setDisabled(element: HTMLButtonElement | HTMLInputElement, isDisabled: boolean): void {
   if (element.disabled !== isDisabled) {
     element.disabled = isDisabled;
   }
@@ -70,7 +65,7 @@ export function placeElement(element: HTMLElement, rect: Rect): void {
   }
 }
 
-/** Rebuilds the children of a list or select when their ids or labels changed. */
+/** Rebuilds the children of a list when their ids or labels changed. */
 function syncChildren(
   parent: HTMLElement,
   items: readonly { readonly id: string; readonly label: string }[],
@@ -109,6 +104,7 @@ function textEntry(document: Document, node: A11yNode, tag: 'h1' | 'h2' | 'p'): 
       setText(element, next.label);
     },
     value: noValue,
+    optionForKey: noOption,
   };
 }
 
@@ -135,6 +131,7 @@ function buttonEntry(document: Document, node: A11yButton | A11ySwitch): MirrorE
       }
     },
     value: noValue,
+    optionForKey: noOption,
   };
 }
 
@@ -169,36 +166,24 @@ function sliderEntry(document: Document): MirrorEntry {
       }
     },
     value: () => input.value,
+    optionForKey: noOption,
   };
 }
 
-/** Writes a select's options before its selection. */
-function updateSelect(select: HTMLSelectElement, node: A11ySelect, document: Document): void {
-  setAttributeValue(select, 'aria-label', node.label);
-  syncChildren(select, node.options, (option) => {
-    const element = document.createElement('option');
-    element.value = option.id;
-    return element;
-  });
-  if (select.value !== node.selectedId) {
-    select.value = node.selectedId;
-  }
-  setDisabled(select, node.isDisabled);
-}
-
-/** A select. */
+/** A spinbutton (a native select would need a user-agent stylesheet that strict CSP refuses). */
 function selectEntry(document: Document): MirrorEntry {
-  const select = document.createElement('select');
+  const spinbutton = createSpinbutton(document);
   return {
     kind: 'select',
     shape: 'select',
-    element: select,
+    element: spinbutton.element,
     update: (next) => {
       if (next.kind === 'select') {
-        updateSelect(select, next, document);
+        spinbutton.update(next);
       }
     },
-    value: () => select.value,
+    value: spinbutton.value,
+    optionForKey: spinbutton.optionForKey,
   };
 }
 
@@ -216,6 +201,7 @@ function listEntry(document: Document): MirrorEntry {
       }
     },
     value: noValue,
+    optionForKey: noOption,
   };
 }
 

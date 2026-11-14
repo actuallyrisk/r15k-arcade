@@ -20,7 +20,6 @@ const SIM_ENGINE_NAMES = [
   ...words(
     'approach fnv1a32 toHex32 hashCanonical canonicalJson rectContains rectsIntersect SIM_STEP_HZ SIM_STEP_SECONDS',
   ),
-  'notImplemented', // scaffold stub marker; this entry is deleted once no simulation stub remains
 ];
 const APPROXIMATED_MESSAGE =
   'Implementation-approximated in JS engines: not deterministic across WebViews.';

@@ -32,7 +32,7 @@ import type { RgbaImage } from '../png/png-encode.ts';
 import type { SnapshotCase, SnapshotEnvironment } from './snapshot-case.ts';
 
 /** The playfield every app layout is computed for (the field of the one game, ADR 0004). */
-const SNAPSHOT_PLAYFIELD: PlayfieldSpec = { width: 240, minHeight: 120, maxHeight: 480 };
+export const SNAPSHOT_PLAYFIELD: PlayfieldSpec = { width: 240, minHeight: 120, maxHeight: 480 };
 /** One frame of the simulated 60 Hz display in milliseconds. */
 const FRAME_MS = 1000 / 60;
 /** Fixed simulation steps per display frame (120 Hz simulation on a 60 Hz display). */

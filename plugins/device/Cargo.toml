@@ -2,7 +2,7 @@
 # immersive mode, keep-awake and move-to-background; no third-party crates.
 [package]
 name = "tauri-plugin-device"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.90"
 license = "MIT"

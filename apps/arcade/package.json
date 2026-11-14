@@ -1,6 +1,6 @@
 {
   "name": "@r15k/arcade",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "R15K Arcade app – hub, intro, settings, top-10 and boot scenes; Vite entry of the Tauri shell.",
   "private": true,
   "type": "module",

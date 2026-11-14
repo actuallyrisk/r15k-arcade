@@ -1,6 +1,6 @@
 {
   "name": "@r15k/tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "R15K Arcade development tools – verify runner, formatter, PNG and pixel snapshots, content checks, audio render, icons and platform patch; dev only, never imported by runtime code.",
   "private": true,
   "type": "module",

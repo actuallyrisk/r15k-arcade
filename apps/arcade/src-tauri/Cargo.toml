@@ -3,7 +3,7 @@
 # and one target directory serve both. Versions are exact; npm and crate Tauri versions share major.minor.
 [package]
 name = "r15k-arcade"
-version = "0.1.0"
+version = "0.2.0"
 description = "R15K Arcade"
 authors = ["R15K"]
 license = "MIT"

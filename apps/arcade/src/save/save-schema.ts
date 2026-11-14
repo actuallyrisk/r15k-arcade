@@ -1,6 +1,7 @@
-import { notImplemented } from '@r15k/engine';
 import type { Bindings, Result, SaveSchema } from '@r15k/engine';
+import { createDefaultSave } from './save-defaults.ts';
 import { SAVE_MIGRATIONS } from './save-migrations.ts';
+import { validateSave } from './save-validate.ts';
 
 /** One top-10 entry. */
 export interface ScoreEntryV1 {
@@ -45,10 +46,10 @@ export interface SaveDocumentV1 {
 export const ARCADE_SAVE_SCHEMA: SaveSchema<SaveDocumentV1> = {
   currentVersion: 1,
   migrations: SAVE_MIGRATIONS,
-  validate(_value: unknown): Result<SaveDocumentV1, readonly string[]> {
-    return notImplemented('arcade.ARCADE_SAVE_SCHEMA.validate');
+  validate(value: unknown): Result<SaveDocumentV1, readonly string[]> {
+    return validateSave(value);
   },
   createDefault(): SaveDocumentV1 {
-    return notImplemented('arcade.ARCADE_SAVE_SCHEMA.createDefault');
+    return createDefaultSave();
   },
 };

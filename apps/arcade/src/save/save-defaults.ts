@@ -1,4 +1,4 @@
-import { DEFAULT_BINDINGS, notImplemented } from '@r15k/engine';
+import { DEFAULT_BINDINGS } from '@r15k/engine';
 import type { SaveDocumentV1, SettingsV1 } from './save-schema.ts';
 
 /** Settings of a fresh install. */
@@ -15,5 +15,10 @@ export const DEFAULT_SETTINGS: SettingsV1 = {
 
 /** The save document of a fresh install. */
 export function createDefaultSave(): SaveDocumentV1 {
-  return notImplemented('arcade.createDefaultSave');
+  return {
+    schemaVersion: 1,
+    settings: DEFAULT_SETTINGS,
+    scores: { bugHunt: { arcade: [] } },
+    meta: { hasCompletedFirstLaunch: false, launchCount: 0, lastInitials: 'AAA' },
+  };
 }

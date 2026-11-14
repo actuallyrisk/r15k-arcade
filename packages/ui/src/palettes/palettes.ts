@@ -1,4 +1,4 @@
-import { notImplemented, paletteFromHex } from '@r15k/engine';
+import { paletteFromHex } from '@r15k/engine';
 import type { ColorName, PaletteColors } from '@r15k/engine';
 import { R15K_DARK_TOKENS, R15K_LIGHT_TOKENS } from './tokens.ts';
 
@@ -99,8 +99,11 @@ export type ThemeSetting = (typeof SELECTABLE_THEMES)[number];
 
 /** The palette of a theme setting ('system' follows the colour-scheme preference). */
 export function resolveThemePalette(
-  _theme: ThemeSetting,
-  _isDarkPreferred: boolean,
+  theme: ThemeSetting,
+  isDarkPreferred: boolean,
 ): 'light' | 'dark' {
-  return notImplemented('ui.resolveThemePalette');
+  if (theme === 'system') {
+    return isDarkPreferred ? 'dark' : 'light';
+  }
+  return theme;
 }

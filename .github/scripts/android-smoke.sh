@@ -26,6 +26,10 @@ emulator="$sdk/emulator/emulator"
 mkdir -p "$out_dir"
 work="$(mktemp -d "${RUNNER_TEMP:-/tmp}/android-smoke.XXXXXX")"
 emulator_pid=''
+# avdmanager and the emulator resolve their AVD folder from different variables on the runner, so the
+# emulator found no AVD; one explicit folder for both.
+export ANDROID_AVD_HOME="$work/avd"
+mkdir -p "$ANDROID_AVD_HOME"
 
 stop_emulator() {
   if [ -n "$emulator_pid" ]; then
@@ -56,11 +60,16 @@ start_emulator() {
   emulator_pid=$!
 }
 
-# Waits until sys.boot_completed is 1; returns 1 after BOOT_TIMEOUT_SECONDS.
+# Waits until sys.boot_completed is 1; returns 1 after BOOT_TIMEOUT_SECONDS or as soon as the emulator
+# process has exited (its log then holds the reason).
 wait_for_boot() {
   local deadline=$((SECONDS + BOOT_TIMEOUT_SECONDS))
-  timeout "$BOOT_TIMEOUT_SECONDS" "$adb" wait-for-device || return 1
   until [ "$("$adb" shell getprop sys.boot_completed 2> /dev/null | tr -d '\r')" = '1' ]; do
+    if ! kill -0 "$emulator_pid" 2> /dev/null; then
+      echo "::warning::emulator exited during boot; last log lines:"
+      tail -n 20 "$out_dir/emulator.log" || true
+      return 1
+    fi
     if [ "$SECONDS" -ge "$deadline" ]; then
       return 1
     fi
